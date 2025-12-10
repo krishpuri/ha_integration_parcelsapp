@@ -14,6 +14,14 @@ class ParcelsAppCard extends LitElement {
     };
   }
 
+  static getConfigElement() {
+    return document.createElement("parcels-app-card-editor");
+  }
+
+  static getStubConfig() {
+    return { title: "Parcels App Packages", max_height: "400px" };
+  }
+
   static get styles() {
     return css`
       :host {
@@ -91,6 +99,18 @@ class ParcelsAppCard extends LitElement {
         display: flex;
         flex-direction: column;
         gap: 10px;
+        overflow-y: auto;
+        padding-right: 4px;
+      }
+      .package-list::-webkit-scrollbar {
+        width: 6px;
+      }
+      .package-list::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .package-list::-webkit-scrollbar-thumb {
+        background-color: var(--scrollbar-thumb-color, rgba(125, 125, 125, 0.3));
+        border-radius: 3px;
       }
       .package-item {
         border: 1px solid var(--divider-color, #e0e0e0);
@@ -98,7 +118,7 @@ class ParcelsAppCard extends LitElement {
         padding: 10px;
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 4px;
         background: var(--card-background-color);
         transition: box-shadow 0.2s;
       }
@@ -149,7 +169,7 @@ class ParcelsAppCard extends LitElement {
         grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
         gap: 6px;
         background: var(--secondary-background-color);
-        padding: 10px;
+        padding: 8px;
         border-radius: 4px;
       }
       .detail-item {
@@ -255,7 +275,7 @@ class ParcelsAppCard extends LitElement {
           </button>
         </div>
 
-        <div class="package-list">
+        <div class="package-list" style="${this.config.max_height ? `max-height: ${this.config.max_height};` : ''}">
           ${entities.length === 0
         ? html`<div class="empty-state">
                 No packages currently being tracked. Add one above!
@@ -305,10 +325,11 @@ class ParcelsAppCard extends LitElement {
             <span class="detail-label">Carrier</span>
             <span class="detail-value">${attrs.carrier || "Unknown"}</span>
           </div>
+          ${attrs.location && attrs.location !== 'undefined' ? html`
           <div class="detail-item">
             <span class="detail-label">Location</span>
-            <span class="detail-value">${attrs.location || "-"}</span>
-          </div>
+            <span class="detail-value">${attrs.location}</span>
+          </div>` : ''}
           ${attrs.days_in_transit !== undefined &&
         attrs.days_in_transit !== null
         ? html` <div class="detail-item">
@@ -386,6 +407,110 @@ class ParcelsAppCard extends LitElement {
   }
 }
 
+class ParcelsAppCardEditor extends LitElement {
+  static get properties() {
+    return {
+      hass: {},
+      config: {},
+    };
+  }
+
+  setConfig(config) {
+    this.config = config;
+  }
+
+  render() {
+    if (!this.hass || !this.config) {
+      return html``;
+    }
+
+    return html`
+      <div class="card-config">
+        <div class="option">
+          <label class="label">Title</label>
+          <input
+            type="text"
+            .value="${this.config.title || ""}"
+            @input="${this._valueChanged}"
+            .configValue="${"title"}"
+          />
+        </div>
+        <div class="option">
+          <label class="label">Max Height (CSS value, e.g., 400px)</label>
+          <input
+            type="text"
+            .value="${this.config.max_height || ""}"
+            @input="${this._valueChanged}"
+            .configValue="${"max_height"}"
+          />
+        </div>
+      </div>
+    `;
+  }
+
+  _valueChanged(ev) {
+    if (!this.config || !this.hass) {
+      return;
+    }
+    const target = ev.target;
+    if (this[`_${target.configValue}`] === target.value) {
+      return;
+    }
+    if (target.configValue) {
+      if (target.value === "") {
+        const newConfig = { ...this.config };
+        delete newConfig[target.configValue];
+        this.config = newConfig;
+      } else {
+        this.config = {
+          ...this.config,
+          [target.configValue]: target.value,
+        };
+      }
+    }
+    const event = new CustomEvent("config-changed", {
+      detail: { config: this.config },
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(event);
+  }
+
+  static get styles() {
+    return css`
+      .card-config {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .option {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .label {
+        font-size: 12px;
+        color: var(--secondary-text-color);
+        font-weight: 500;
+      }
+      input {
+        padding: 8px;
+        border: 1px solid var(--divider-color, #e0e0e0);
+        border-radius: 4px;
+        background: var(--input-background-color, transparent);
+        color: var(--primary-text-color);
+        width: 100%;
+        box-sizing: border-box;
+      }
+      input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+      }
+    `;
+  }
+}
+
+customElements.define("parcels-app-card-editor", ParcelsAppCardEditor);
 customElements.define("parcels-app-card", ParcelsAppCard);
 
 window.customCards = window.customCards || [];
