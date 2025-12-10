@@ -1,0 +1,16 @@
+{
+    "domain": "parcelsapp",
+    "name": "Parcels App",
+    "config_flow": true,
+    "documentation": "https://github.com/storm1er/ha_integration_parcelsapp",
+    "requirements": [
+        "aiohttp"
+    ],
+    "ssdp": [],
+    "zeroconf": [],
+    "homekit": {},
+    "dependencies": [],
+    "codeowners": [],
+    "iot_class": "cloud_polling",
+    "version": "0.1.2"
+}
