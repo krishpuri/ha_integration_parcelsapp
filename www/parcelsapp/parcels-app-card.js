@@ -28,10 +28,6 @@ class ParcelsAppCard extends LitElement {
         display: block;
       }
       ha-card {
-        background-color: var(
-          --ha-card-background,
-          var(--card-background-color, white)
-        );
         color: var(--primary-text-color);
         padding: 12px;
       }
@@ -119,7 +115,6 @@ class ParcelsAppCard extends LitElement {
         display: flex;
         flex-direction: column;
         gap: 4px;
-        background: var(--card-background-color);
         transition: box-shadow 0.2s;
       }
       .package-item:hover {
@@ -168,7 +163,6 @@ class ParcelsAppCard extends LitElement {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
         gap: 6px;
-        background: var(--secondary-background-color);
         padding: 8px;
         border-radius: 4px;
       }
